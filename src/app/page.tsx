@@ -8,109 +8,121 @@ import {
   CheckIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
+import { db } from "@/firebase/config";
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  Timestamp,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
 interface Rally {
-  id: number;
-  arrivalTime: Date;
+  id: string;
+  arrivalTime: Timestamp;
   nickname: string;
-  isEditing: boolean;
+  isEditing?: boolean;
 }
 
 export default function Home() {
   const [now, setNow] = useState<Date>(new Date());
   const [rallies, setRallies] = useState<Rally[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [isMounted, setIsMounted] = useState(false); // 1. 마운트 상태 추가
+  const [isMounted, setIsMounted] = useState(false);
 
-  // 2. 클라이언트에서 마운트된 후에 isMounted를 true로 설정
+  // Hydration 에러 방지를 위해 클라이언트에서만 마운트 상태 설정
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // ## 1. 실시간 데이터 구독 전용 useEffect
+  useEffect(() => {
+    const q = query(collection(db, "rallies"), orderBy("arrivalTime", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ralliesFromDB: Rally[] = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as Rally)
+      );
+      setRallies(ralliesFromDB);
+    });
+    // 컴포넌트가 사라질 때 구독 해제
+    return () => unsubscribe();
+  }, []); // 최초 1회만 실행
+
+  // ## 2. 1초 시계 전용 useEffect
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(new Date());
     }, 1000);
+    // 컴포넌트가 사라질 때 타이머 정리
     return () => clearInterval(timer);
-  }, []);
+  }, []); // 최초 1회만 실행
 
-  const addRally = () => {
-    const startTime = new Date();
-    const arrivalTime = new Date(startTime.getTime() + 5 * 60 * 1000);
-    const newRally: Rally = {
-      id: Date.now(),
-      arrivalTime: arrivalTime,
-      nickname: `적 랠리 ${rallies.length + 1}`,
-      isEditing: false,
-    };
-    setRallies((prevRallies) => [...prevRallies, newRally]);
-  };
-
-  const deleteRally = (rallyId: number) => {
-    setRallies(rallies.filter((rally) => rally.id !== rallyId));
-  };
-
-  const toggleEditMode = (rallyId: number) => {
-    setRallies(
-      rallies.map((rally) =>
-        rally.id === rallyId
-          ? { ...rally, isEditing: !rally.isEditing }
-          : { ...rally, isEditing: false }
-      )
-    );
-  };
-
-  const handleNicknameChange = (rallyId: number, newNickname: string) => {
-    if (newNickname.length > 12) {
-      setErrorMessage("별명은 12자 이상 입력할 수 없습니다.");
-      setTimeout(() => setErrorMessage(""), 3000);
-      const originalRally = rallies.find((r) => r.id === rallyId);
-      if (originalRally) {
-        setRallies(
-          rallies.map((r) =>
-            r.id === rallyId ? { ...r, nickname: originalRally.nickname } : r
-          )
-        );
+  // ## 3. 자동 삭제 검사 전용 useEffect
+  useEffect(() => {
+    // now 또는 rallies 상태가 변경될 때마다 만료된 랠리가 있는지 확인
+    rallies.forEach((rally) => {
+      if (rally.arrivalTime.toDate().getTime() <= now.getTime()) {
+        deleteRally(rally.id);
       }
+    });
+  }, [now, rallies]); // now 또는 rallies가 변경될 때마다 실행
+
+  // --- Firestore 데이터 함수 ---
+  const addRally = async () => {
+    const arrivalTime = new Date(Date.now() + 5 * 60 * 1000);
+    await addDoc(collection(db, "rallies"), {
+      nickname: `새로운 랠리`,
+      arrivalTime: Timestamp.fromDate(arrivalTime),
+    });
+  };
+
+  const deleteRally = async (rallyId: string) =>
+    await deleteDoc(doc(db, "rallies", rallyId));
+  const adjustRallyTime = async (
+    rallyId: string,
+    currentArrivalTime: Timestamp,
+    milliseconds: number
+  ) => {
+    const newDate = new Date(
+      currentArrivalTime.toDate().getTime() + milliseconds
+    );
+    await updateDoc(doc(db, "rallies", rallyId), {
+      arrivalTime: Timestamp.fromDate(newDate),
+    });
+  };
+  const handleNicknameChange = async (rallyId: string, newNickname: string) => {
+    if (newNickname.length > 12) {
+      setErrorMessage("별명은 12자를 초과할 수 없습니다.");
+      setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
-    setErrorMessage("");
+    await updateDoc(doc(db, "rallies", rallyId), { nickname: newNickname });
+  };
+  const toggleEditMode = (rallyId: string) => {
     setRallies(
-      rallies.map((rally) =>
-        rally.id === rallyId ? { ...rally, nickname: newNickname } : rally
+      rallies.map((r) =>
+        r.id === rallyId
+          ? { ...r, isEditing: !r.isEditing }
+          : { ...r, isEditing: false }
       )
     );
   };
 
-  const adjustRallyTime = (rallyId: number, milliseconds: number) => {
-    setRallies(
-      rallies.map((rally) => {
-        if (rally.id === rallyId) {
-          const newArrivalTime = new Date(
-            rally.arrivalTime.getTime() + milliseconds
-          );
-          return { ...rally, arrivalTime: newArrivalTime };
-        }
-        return rally;
-      })
-    );
-  };
-
+  // --- Helper 함수 ---
   const formatTime = (date: Date) => date.toISOString().substr(11, 8);
-  const calculateCounterTime = (arrivalTime: Date) =>
-    formatTime(new Date(arrivalTime.getTime() - 5 * 60 * 1000));
-  const calculateRemainingTime = (arrivalTime: Date) => {
-    const difference = arrivalTime.getTime() - now.getTime();
-    if (difference <= 0) {
-      setTimeout(() => {
-        setRallies((prevRallies) =>
-          prevRallies.filter(
-            (r) => r.arrivalTime.getTime() > new Date().getTime()
-          )
-        );
-      }, 100);
-      return "도착 완료";
-    }
+  const calculateCounterTime = (arrivalTime: Timestamp) =>
+    formatTime(new Date(arrivalTime.toDate().getTime() - 5 * 60 * 1000));
+  const calculateRemainingTime = (arrivalTime: Timestamp) => {
+    const difference = arrivalTime.toDate().getTime() - now.getTime();
+    if (difference <= 0) return "도착 완료";
     const minutes = Math.floor((difference / 1000 / 60) % 60);
     const seconds = Math.floor((difference / 1000) % 60);
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
@@ -126,12 +138,10 @@ export default function Home() {
           현재 UTC 시간
         </p>
         <p className="text-6xl md:text-7xl font-mono font-extralight tracking-tighter">
-          {/* 3. isMounted가 true일 때만 시간을 렌더링 */}
           {isMounted ? formatTime(now) : "00:00:00"}
         </p>
       </header>
 
-      {/* The rest of the code remains the same */}
       <main className="flex-grow overflow-y-auto pt-32 pb-28 px-4">
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-500/20 text-red-400 text-center rounded-lg">
@@ -175,11 +185,7 @@ export default function Home() {
                     onClick={() => toggleEditMode(rally.id)}
                     className="p-1 text-gray-400 hover:text-white"
                   >
-                    {rally.isEditing ? (
-                      <CheckIcon className="w-5 h-5" />
-                    ) : (
-                      <PencilIcon className="w-5 h-5" />
-                    )}
+                    <PencilIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => deleteRally(rally.id)}
@@ -189,7 +195,6 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-
               <hr className="border-t border-white/10 my-4" />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between items-center">
@@ -209,28 +214,35 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-
               <div className="grid grid-cols-4 gap-2 mt-4">
                 <button
-                  onClick={() => adjustRallyTime(rally.id, -300000)}
+                  onClick={() =>
+                    adjustRallyTime(rally.id, rally.arrivalTime, -300000)
+                  }
                   className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
                 >
                   -5분
                 </button>
                 <button
-                  onClick={() => adjustRallyTime(rally.id, -1000)}
+                  onClick={() =>
+                    adjustRallyTime(rally.id, rally.arrivalTime, -1000)
+                  }
                   className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
                 >
                   -1초
                 </button>
                 <button
-                  onClick={() => adjustRallyTime(rally.id, 1000)}
+                  onClick={() =>
+                    adjustRallyTime(rally.id, rally.arrivalTime, 1000)
+                  }
                   className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
                 >
                   +1초
                 </button>
                 <button
-                  onClick={() => adjustRallyTime(rally.id, 300000)}
+                  onClick={() =>
+                    adjustRallyTime(rally.id, rally.arrivalTime, 300000)
+                  }
                   className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
                 >
                   +5분
@@ -239,7 +251,7 @@ export default function Home() {
             </div>
           ))}
           {rallies.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center pt-10">
+            <div className="text-center pt-10">
               <p className="text-lg font-semibold">활성화된 랠리가 없습니다.</p>
               <p className="text-[var(--muted-foreground)] mt-2">
                 아래 버튼을 눌러 새 랠리를 추가하세요.
