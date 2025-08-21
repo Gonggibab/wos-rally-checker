@@ -2,18 +2,12 @@
 "use client";
 
 import { Timestamp } from "firebase/firestore";
-// 분리한 컴포넌트와 훅을 import
 import Header from "@/components/Header";
 import RallyCard from "@/components/RallyCard";
 import Footer from "@/components/Footer";
 import { useClock } from "@/hooks/useClock";
 import { useRallies } from "@/hooks/useRallies";
 
-// Helper 함수들은 페이지에서 직접 관리
-const calculateCounterTime = (arrivalTime: Timestamp) => {
-  const date = new Date(arrivalTime.toDate().getTime() - 5 * 60 * 1000);
-  return date.toISOString().substr(11, 8);
-};
 const calculateRemainingTime = (arrivalTime: Timestamp, now: Date) => {
   const difference = arrivalTime.toDate().getTime() - now.getTime();
   if (difference <= 0) return "도착 완료";
@@ -26,7 +20,6 @@ const calculateRemainingTime = (arrivalTime: Timestamp, now: Date) => {
 };
 
 export default function Home() {
-  // 커스텀 훅 호출로 모든 로직을 가져옴
   const { now, isMounted, formatTime } = useClock();
   const {
     rallies,
@@ -54,11 +47,11 @@ export default function Home() {
               key={rally.id}
               rally={rally}
               now={now}
+              formatTime={formatTime} // formatTime 함수를 RallyCard로 전달
               toggleEditMode={toggleEditMode}
               handleNicknameChange={handleNicknameChange}
               deleteRally={deleteRally}
               adjustRallyTime={adjustRallyTime}
-              calculateCounterTime={calculateCounterTime}
               calculateRemainingTime={calculateRemainingTime}
             />
           ))}

@@ -3,34 +3,27 @@
 
 import { PencilIcon, CheckIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Timestamp } from "firebase/firestore";
-
-// 컴포넌트가 받을 props 타입을 정의합니다.
-interface Rally {
-  id: string;
-  arrivalTime: Timestamp;
-  nickname: string;
-  isEditing?: boolean;
-}
+import { Rally } from "@/hooks/useRallies";
 
 interface RallyCardProps {
   rally: Rally;
   now: Date;
+  formatTime: (date: Date) => string;
   toggleEditMode: (id: string) => void;
   handleNicknameChange: (id: string, nickname: string) => void;
   deleteRally: (id: string) => void;
   adjustRallyTime: (id: string, arrivalTime: Timestamp, ms: number) => void;
-  calculateCounterTime: (arrivalTime: Timestamp) => string;
   calculateRemainingTime: (arrivalTime: Timestamp, now: Date) => string;
 }
 
 export default function RallyCard({
   rally,
   now,
+  formatTime,
   toggleEditMode,
   handleNicknameChange,
   deleteRally,
   adjustRallyTime,
-  calculateCounterTime,
   calculateRemainingTime,
 }: RallyCardProps) {
   return (
@@ -85,7 +78,7 @@ export default function RallyCard({
         <div className="flex justify-between items-center">
           <span className="text-[var(--muted-foreground)]">랠리 켜진 시간</span>
           <span className="font-mono text-base text-sky-400">
-            {calculateCounterTime(rally.arrivalTime)}
+            {formatTime(rally.startTime.toDate())}
           </span>
         </div>
         <div className="flex justify-between items-center">

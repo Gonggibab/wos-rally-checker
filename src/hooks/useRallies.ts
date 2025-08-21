@@ -1,7 +1,7 @@
 // src/hooks/useRallies.ts
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { db } from "@/firebase/config";
 import {
   collection,
@@ -13,23 +13,28 @@ import {
   Timestamp,
   orderBy,
   query,
+  Unsubscribe,
 } from "firebase/firestore";
 
-// Rally 타입을 여기서도 정의해줍니다.
 export interface Rally {
   id: string;
   arrivalTime: Timestamp;
   nickname: string;
+  durationMinutes: number;
+  startTime: Timestamp; // 1. '랠리 켜진 시간'을 저장할 필드 추가
   isEditing?: boolean;
 }
 
 export function useRallies() {
   const [rallies, setRallies] = useState<Rally[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
-  useEffect(() => {
-    const q = query(collection(db, "rallies"), orderBy("arrivalTime", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+  const subscribeToRallies = useCallback(() => {
+    if (unsubscribeRef.current) return;
+    // 3. 정렬 기준을 arrivalTime -> startTime으로 변경
+    const q = query(collection(db, "rallies"), orderBy("startTime", "desc"));
+    unsubscribeRef.current = onSnapshot(q, (snapshot) => {
       const ralliesFromDB: Rally[] = snapshot.docs.map(
         (doc) =>
           ({
@@ -39,15 +44,40 @@ export function useRallies() {
       );
       setRallies(ralliesFromDB);
     });
-    return () => unsubscribe();
   }, []);
 
+  const unsubscribeFromRallies = useCallback(() => {
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    subscribeToRallies();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        unsubscribeFromRallies();
+      } else {
+        subscribeToRallies();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      unsubscribeFromRallies();
+    };
+  }, [subscribeToRallies, unsubscribeFromRallies]);
+
   const addRally = async (minutes: number) => {
-    // minutes 인자 추가
-    const arrivalTime = new Date(Date.now() + minutes * 60 * 1000); // 인자를 사용해 시간 계산
+    // 2. 랠리를 추가할 때 startTime도 함께 저장
+    const startTime = new Date();
+    const arrivalTime = new Date(startTime.getTime() + minutes * 60 * 1000);
     await addDoc(collection(db, "rallies"), {
-      nickname: `새로운 ${minutes}분 랠리`, // 닉네임도 동적으로 변경
+      nickname: `새로운 ${minutes}분 랠리`,
+      startTime: Timestamp.fromDate(startTime),
       arrivalTime: Timestamp.fromDate(arrivalTime),
+      durationMinutes: minutes,
     });
   };
 
@@ -62,9 +92,7 @@ export function useRallies() {
     const newDate = new Date(
       currentArrivalTime.toDate().getTime() + milliseconds
     );
-    await updateDoc(doc(db, "rallies", rallyId), {
-      arrivalTime: Timestamp.fromDate(newDate),
-    });
+    await updateDoc(doc(db, "rallies", rallyId), { arrivalTime: newDate });
   };
 
   const handleNicknameChange = async (rallyId: string, newNickname: string) => {
@@ -86,8 +114,6 @@ export function useRallies() {
     );
   };
 
-  // 자동 삭제 로직을 여기에 포함
-  const now = new Date(); // 자동 삭제 체크를 위한 시간
   useEffect(() => {
     const deleteTimer = setInterval(() => {
       rallies.forEach((rally) => {
