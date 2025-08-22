@@ -1,41 +1,54 @@
 // src/app/page.tsx
 "use client";
 
-import { Timestamp } from "firebase/firestore";
+import { useState } from "react";
 import Header from "@/components/Header";
 import RallyCard from "@/components/RallyCard";
 import Footer from "@/components/Footer";
+import AddProfileModal from "@/components/AddProfileModal";
+import MyMarchTimeModal from "@/components/MyMarchTimeModal";
 import { useClock } from "@/hooks/useClock";
 import { useRallies } from "@/hooks/useRallies";
-
-const calculateRemainingTime = (arrivalTime: Timestamp, now: Date) => {
-  const difference = arrivalTime.toDate().getTime() - now.getTime();
-  if (difference <= 0) return "도착 완료";
-  const minutes = Math.floor((difference / 1000 / 60) % 60);
-  const seconds = Math.floor((difference / 1000) % 60);
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-    2,
-    "0"
-  )} 남음`;
-};
+import { useMyMarchTime } from "@/hooks/useMyMarchTime";
 
 export default function Home() {
   const { now, isMounted, formatTime } = useClock();
   const {
     rallies,
+    profiles,
     errorMessage,
+    selectedProfileId,
+    setSelectedProfileId,
     addRally,
+    addProfile,
+    deleteProfile,
     deleteRally,
     adjustRallyTime,
     handleNicknameChange,
     toggleEditMode,
   } = useRallies();
+  const { myMarchTime, saveMyMarchTime } = useMyMarchTime();
+
+  const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [isMarchTimeModalOpen, setMarchTimeModalOpen] = useState(false);
 
   return (
     <div className="h-screen bg-[var(--background)] flex flex-col">
       <Header isMounted={isMounted} now={now} formatTime={formatTime} />
 
-      <main className="flex-grow overflow-y-auto pt-32 pb-28 px-4">
+      <AddProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        onSave={addProfile}
+      />
+      <MyMarchTimeModal
+        isOpen={isMarchTimeModalOpen}
+        onClose={() => setMarchTimeModalOpen(false)}
+        onSave={saveMyMarchTime}
+        initialTime={myMarchTime}
+      />
+
+      <main className="flex-grow overflow-y-auto pt-32 pb-64 px-4">
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-500/20 text-red-400 text-center rounded-lg">
             {errorMessage}
@@ -47,17 +60,19 @@ export default function Home() {
               key={rally.id}
               rally={rally}
               now={now}
-              formatTime={formatTime} // formatTime 함수를 RallyCard로 전달
+              formatTime={formatTime}
               toggleEditMode={toggleEditMode}
               handleNicknameChange={handleNicknameChange}
               deleteRally={deleteRally}
               adjustRallyTime={adjustRallyTime}
-              calculateRemainingTime={calculateRemainingTime}
+              myMarchTime={myMarchTime}
             />
           ))}
           {rallies.length === 0 && (
             <div className="text-center pt-10">
-              <p className="text-lg font-semibold">활성화된 랠리가 없습니다.</p>
+              <p className="text-lg font-semibold text-white">
+                활성화된 랠리가 없습니다.
+              </p>
               <p className="text-[var(--muted-foreground)] mt-2">
                 아래 버튼을 눌러 새 랠리를 추가하세요.
               </p>
@@ -66,7 +81,15 @@ export default function Home() {
         </div>
       </main>
 
-      <Footer onAddRally={addRally} />
+      <Footer
+        profiles={profiles}
+        selectedProfileId={selectedProfileId}
+        onAddRally={addRally}
+        onAddProfileClick={() => setProfileModalOpen(true)}
+        onProfileSelect={setSelectedProfileId}
+        onProfileDelete={deleteProfile}
+        onMyMarchTimeClick={() => setMarchTimeModalOpen(true)}
+      />
     </div>
   );
 }

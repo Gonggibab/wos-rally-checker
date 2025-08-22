@@ -4,6 +4,7 @@
 import { PencilIcon, CheckIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Timestamp } from "firebase/firestore";
 import { Rally } from "@/hooks/useRallies";
+import { useMemo } from "react";
 
 interface RallyCardProps {
   rally: Rally;
@@ -12,8 +13,8 @@ interface RallyCardProps {
   toggleEditMode: (id: string) => void;
   handleNicknameChange: (id: string, nickname: string) => void;
   deleteRally: (id: string) => void;
-  adjustRallyTime: (id: string, arrivalTime: Timestamp, ms: number) => void;
-  calculateRemainingTime: (arrivalTime: Timestamp, now: Date) => string;
+  adjustRallyTime: (id: string, rally: Rally, ms: number) => void;
+  myMarchTime: number;
 }
 
 export default function RallyCard({
@@ -24,8 +25,34 @@ export default function RallyCard({
   handleNicknameChange,
   deleteRally,
   adjustRallyTime,
-  calculateRemainingTime,
+  myMarchTime,
 }: RallyCardProps) {
+  const remainingSeconds = useMemo(() => {
+    const difference = rally.arrivalTime.toDate().getTime() - now.getTime();
+    return Math.max(0, difference / 1000);
+  }, [rally.arrivalTime, now]);
+
+  const fuelingStartSeconds = useMemo(() => {
+    return Math.max(0, remainingSeconds - myMarchTime);
+  }, [remainingSeconds, myMarchTime]);
+
+  const formatDisplayTime = (totalSeconds: number) => {
+    if (totalSeconds <= 0) return "출발!";
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+      2,
+      "0"
+    )} 남음`;
+  };
+
+  const remainingTimeDisplay = useMemo(() => {
+    if (remainingSeconds <= 0) return "도착 완료";
+    return formatDisplayTime(remainingSeconds);
+  }, [remainingSeconds]);
+
+  // cardClasses 변수와 그 사용 부분을 삭제했습니다.
+
   return (
     <div className="fade-in bg-[var(--card)] border border-[var(--card-border)] rounded-lg p-5">
       <div className="flex justify-between items-center gap-3">
@@ -84,31 +111,37 @@ export default function RallyCard({
         <div className="flex justify-between items-center">
           <span className="text-[var(--muted-foreground)]">남은 시간</span>
           <span className="font-mono text-base text-yellow-400">
-            {calculateRemainingTime(rally.arrivalTime, now)}
+            {remainingTimeDisplay}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-orange-400">주유 출발 시간</span>
+          <span className={`font-mono text-base font-bold text-orange-400`}>
+            {formatDisplayTime(fuelingStartSeconds)}
           </span>
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2 mt-4">
         <button
-          onClick={() => adjustRallyTime(rally.id, rally.arrivalTime, -60000)}
+          onClick={() => adjustRallyTime(rally.id, rally, -60000)}
           className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
         >
           -1분
         </button>
         <button
-          onClick={() => adjustRallyTime(rally.id, rally.arrivalTime, -1000)}
+          onClick={() => adjustRallyTime(rally.id, rally, -1000)}
           className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
         >
           -1초
         </button>
         <button
-          onClick={() => adjustRallyTime(rally.id, rally.arrivalTime, 1000)}
+          onClick={() => adjustRallyTime(rally.id, rally, 1000)}
           className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
         >
           +1초
         </button>
         <button
-          onClick={() => adjustRallyTime(rally.id, rally.arrivalTime, 60000)}
+          onClick={() => adjustRallyTime(rally.id, rally, 60000)}
           className="h-10 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg"
         >
           +1분

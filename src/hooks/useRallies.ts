@@ -21,18 +21,29 @@ export interface Rally {
   arrivalTime: Timestamp;
   nickname: string;
   durationMinutes: number;
-  startTime: Timestamp; // 1. '랠리 켜진 시간'을 저장할 필드 추가
+  startTime: Timestamp;
+  profileId: string;
   isEditing?: boolean;
+}
+
+export interface Profile {
+  id: string;
+  nickname: string;
+  marchSpeed: number;
 }
 
 export function useRallies() {
   const [rallies, setRallies] = useState<Rally[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    null
+  );
   const [errorMessage, setErrorMessage] = useState<string>("");
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
+  // 랠리 데이터 구독
   const subscribeToRallies = useCallback(() => {
     if (unsubscribeRef.current) return;
-    // 3. 정렬 기준을 arrivalTime -> startTime으로 변경
     const q = query(collection(db, "rallies"), orderBy("startTime", "desc"));
     unsubscribeRef.current = onSnapshot(q, (snapshot) => {
       const ralliesFromDB: Rally[] = snapshot.docs.map(
@@ -69,16 +80,65 @@ export function useRallies() {
     };
   }, [subscribeToRallies, unsubscribeFromRallies]);
 
+  // 프로필 데이터 구독
+  useEffect(() => {
+    const q = query(collection(db, "profiles"), orderBy("nickname"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const profilesFromDB: Profile[] = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as Profile)
+      );
+      setProfiles(profilesFromDB);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 랠리 추가
   const addRally = async (minutes: number) => {
-    // 2. 랠리를 추가할 때 startTime도 함께 저장
+    if (!selectedProfileId) {
+      alert("먼저 사용할 프로필을 선택해주세요.");
+      return;
+    }
+
+    const selectedProfile = profiles.find((p) => p.id === selectedProfileId);
+    if (!selectedProfile) {
+      alert("선택된 프로필을 찾을 수 없습니다.");
+      return;
+    }
+
     const startTime = new Date();
-    const arrivalTime = new Date(startTime.getTime() + minutes * 60 * 1000);
+    const arrivalTime = new Date(
+      startTime.getTime() +
+        minutes * 60 * 1000 +
+        selectedProfile.marchSpeed * 1000
+    );
+
     await addDoc(collection(db, "rallies"), {
-      nickname: `새로운 ${minutes}분 랠리`,
+      nickname: selectedProfile.nickname,
       startTime: Timestamp.fromDate(startTime),
       arrivalTime: Timestamp.fromDate(arrivalTime),
       durationMinutes: minutes,
+      profileId: selectedProfile.id,
     });
+  };
+
+  // 프로필 추가
+  const addProfile = async (nickname: string, marchSpeed: number) => {
+    await addDoc(collection(db, "profiles"), {
+      nickname,
+      marchSpeed,
+    });
+  };
+
+  // 프로필 삭제
+  const deleteProfile = async (profileId: string) => {
+    if (selectedProfileId === profileId) {
+      setSelectedProfileId(null);
+    }
+    await deleteDoc(doc(db, "profiles", profileId));
   };
 
   const deleteRally = async (rallyId: string) =>
@@ -86,13 +146,21 @@ export function useRallies() {
 
   const adjustRallyTime = async (
     rallyId: string,
-    currentArrivalTime: Timestamp,
+    rally: Rally,
     milliseconds: number
   ) => {
-    const newDate = new Date(
-      currentArrivalTime.toDate().getTime() + milliseconds
+    const currentStartTime = rally.startTime.toDate();
+    const currentArrivalTime = rally.arrivalTime.toDate();
+
+    const newStartTime = new Date(currentStartTime.getTime() + milliseconds);
+    const newArrivalTime = new Date(
+      currentArrivalTime.getTime() + milliseconds
     );
-    await updateDoc(doc(db, "rallies", rallyId), { arrivalTime: newDate });
+
+    await updateDoc(doc(db, "rallies", rallyId), {
+      startTime: Timestamp.fromDate(newStartTime),
+      arrivalTime: Timestamp.fromDate(newArrivalTime),
+    });
   };
 
   const handleNicknameChange = async (rallyId: string, newNickname: string) => {
@@ -114,6 +182,7 @@ export function useRallies() {
     );
   };
 
+  // 자동 삭제 로직
   useEffect(() => {
     const deleteTimer = setInterval(() => {
       rallies.forEach((rally) => {
@@ -127,8 +196,13 @@ export function useRallies() {
 
   return {
     rallies,
+    profiles,
     errorMessage,
+    selectedProfileId,
+    setSelectedProfileId,
     addRally,
+    addProfile,
+    deleteProfile,
     deleteRally,
     adjustRallyTime,
     handleNicknameChange,
