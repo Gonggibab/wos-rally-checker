@@ -2,14 +2,15 @@
 "use client";
 
 import { useState } from "react";
+import { Timestamp } from "firebase/firestore";
 import Header from "@/components/Header";
 import RallyCard from "@/components/RallyCard";
 import Footer from "@/components/Footer";
 import AddProfileModal from "@/components/AddProfileModal";
 import MyMarchTimeModal from "@/components/MyMarchTimeModal";
 import { useClock } from "@/hooks/useClock";
-import { useRallies } from "@/hooks/useRallies";
-import { useMyMarchTime } from "@/hooks/useMyMarchTime";
+import { useRallies, Rally, Profile } from "@/hooks/useRallies";
+import { useMyMarchTime } from "@/hooks/useMyMarchTime"; // 훅 import
 
 export default function Home() {
   const { now, isMounted, formatTime } = useClock();
@@ -27,13 +28,15 @@ export default function Home() {
     handleNicknameChange,
     toggleEditMode,
   } = useRallies();
+
+  // --- 이 부분이 추가/수정되었습니다 ---
   const { myMarchTime, saveMyMarchTime } = useMyMarchTime();
 
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isMarchTimeModalOpen, setMarchTimeModalOpen] = useState(false);
 
   return (
-    <div className="h-screen bg-[var(--background)] flex flex-col">
+    <div className="fixed inset-0 bg-[var(--background)] flex flex-col">
       <Header isMounted={isMounted} now={now} formatTime={formatTime} />
 
       <AddProfileModal
