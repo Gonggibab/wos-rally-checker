@@ -15,6 +15,7 @@ interface RallyCardProps {
   deleteRally: (id: string) => void;
   adjustRallyTime: (id: string, rally: Rally, ms: number) => void;
   myMarchTime: number;
+  isMounted: boolean;
 }
 
 export default function RallyCard({
@@ -26,6 +27,7 @@ export default function RallyCard({
   deleteRally,
   adjustRallyTime,
   myMarchTime,
+  isMounted,
 }: RallyCardProps) {
   const remainingSeconds = useMemo(() => {
     const difference = rally.arrivalTime.toDate().getTime() - now.getTime();
@@ -50,8 +52,6 @@ export default function RallyCard({
     if (remainingSeconds <= 0) return "도착 완료";
     return formatDisplayTime(remainingSeconds);
   }, [remainingSeconds]);
-
-  // cardClasses 변수와 그 사용 부분을 삭제했습니다.
 
   return (
     <div className="fade-in bg-[var(--card)] border border-[var(--card-border)] rounded-lg p-5">
@@ -111,13 +111,13 @@ export default function RallyCard({
         <div className="flex justify-between items-center">
           <span className="text-[var(--muted-foreground)]">남은 시간</span>
           <span className="font-mono text-base text-yellow-400">
-            {remainingTimeDisplay}
+            {isMounted ? remainingTimeDisplay : "계산 중..."}
           </span>
         </div>
         <div className="flex justify-between items-center">
           <span className="font-semibold text-orange-400">주유 출발 시간</span>
           <span className={`font-mono text-base font-bold text-orange-400`}>
-            {formatDisplayTime(fuelingStartSeconds)}
+            {isMounted ? formatDisplayTime(fuelingStartSeconds) : "계산 중..."}
           </span>
         </div>
       </div>
