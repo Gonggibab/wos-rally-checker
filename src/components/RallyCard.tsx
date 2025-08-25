@@ -2,7 +2,6 @@
 "use client";
 
 import { PencilIcon, CheckIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { Timestamp } from "firebase/firestore";
 import { Rally } from "@/hooks/useRallies";
 import { useMemo } from "react";
 

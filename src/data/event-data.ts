@@ -10,6 +10,7 @@ export interface Event {
   color: string; // Tailwind CSS background color class
   schedule: (EventSchedule | null)[]; // 4주(Part 1~4)의 스케줄
   groupId?: string;
+  iconUrl?: string; // 아이콘 이미지 URL
 }
 
 // 기준점을 현재 주간의 월요일(2025-08-25)으로 변경합니다.
@@ -19,11 +20,15 @@ export const EVENTS: Event[] = [
   {
     name: "빙원의 왕",
     color: "bg-yellow-500",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/11/17094852/jump_icon_40167.png",
     schedule: [{ start: 0, end: 6 }, null, null, null],
   },
   {
     name: "행운의 룰렛",
     color: "bg-yellow-500",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/07/20120516/jump_icon_40136.png",
     schedule: [{ start: 1, end: 3 }, null, { start: 1, end: 3 }, null],
   },
   {
@@ -34,6 +39,8 @@ export const EVENTS: Event[] = [
   {
     name: "미치광이 조이",
     color: "bg-green-500",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/05/15132549/jump_icon_40106.png",
     schedule: [{ start: 1, end: 3 }, null, { start: 1, end: 3 }, null],
   },
   {
@@ -59,6 +66,8 @@ export const EVENTS: Event[] = [
   {
     name: "요새쟁탈",
     color: "bg-yellow-500",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/05/15133333/jump_icon_40114.png",
     schedule: [
       { start: 1, end: 4 },
       { start: 1, end: 4 },
@@ -70,6 +79,8 @@ export const EVENTS: Event[] = [
     name: "영웅의 전당",
     color: "bg-yellow-500",
     groupId: "yeongjeon",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/05/15132715/jump_icon_40108.png",
     schedule: [
       { start: 0, end: 1 },
       { start: 0, end: 1 },
@@ -81,6 +92,8 @@ export const EVENTS: Event[] = [
     name: "영웅의 전당",
     color: "bg-yellow-500",
     groupId: "yeongjeon",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/05/15132715/jump_icon_40108.png",
     schedule: [
       { start: 6, end: 6 },
       { start: 6, end: 6 },
@@ -138,6 +151,8 @@ export const EVENTS: Event[] = [
   {
     name: "낚시선수권 대회",
     color: "bg-green-500",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21123327/jump_icon_40179.png",
     schedule: [null, { start: 1, end: 4 }, null, { start: 1, end: 4 }],
   },
   {

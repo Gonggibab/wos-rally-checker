@@ -2,6 +2,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import { processEventsForWeek } from "./calendar-helpers";
 
 interface EventCalendarProps {
@@ -15,7 +16,7 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
     startDate.setDate(startDate.getDate() - ((today.getDay() + 6) % 7));
 
     const weeks = [];
-    let currentDatePointer = new Date(startDate);
+    const currentDatePointer = new Date(startDate); // let -> const
 
     for (let i = 0; i < 4; i++) {
       const currentWeek = [];
@@ -26,25 +27,21 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
       weeks.push(currentWeek);
     }
     return weeks;
-  }, [currentDate]);
+  }, []); // 불필요한 currentDate 의존성 제거
 
   return (
-    // 요일 표시는 page.tsx로 이동했으므로 여기서는 제거합니다.
     <div className="border-l border-r border-b border-gray-700">
       {weeksInMonth.map((week, weekIndex) => {
         const processedEvents = processEventsForWeek(week);
         const maxLane = Math.max(-1, ...processedEvents.map((e) => e.lane));
-        // 이벤트 높이(24) + 간격(4) = 28px 기준으로 최소 높이 계산
         const requiredHeight = 40 + (maxLane + 1) * 28;
 
         return (
-          // 주차별 박스에 상하 마진(my-2)을 추가하여 간격 생성
           <div
             key={weekIndex}
             className="relative grid grid-cols-7 border-t border-gray-700 my-2"
             style={{ minHeight: `${requiredHeight}px` }}
           >
-            {/* 날짜 셀들 */}
             {week.map((date, dayIndex) => {
               const isCurrentMonth = date.getMonth() === currentDate.getMonth();
               const today = new Date();
@@ -71,22 +68,31 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
                 </div>
               );
             })}
-
-            {/* 이벤트 막대들 */}
             <div className="absolute top-8 left-0 right-0">
               {processedEvents.map((event) => (
                 <div
                   key={`${event.name}-${event.startCol}`}
-                  className={`${event.color} absolute text-white text-xs font-semibold px-2 flex items-center rounded-md truncate cursor-pointer hover:opacity-80`}
+                  className={`${event.color} absolute flex items-center text-white text-xs font-semibold px-2 rounded-md truncate cursor-pointer hover:opacity-80`}
                   style={{
-                    top: `${event.lane * 28 + 2}px`, // 이벤트 간 세로 간격 조정
+                    top: `${event.lane * 28 + 2}px`,
                     left: `calc(${(100 / 7) * event.startCol}% + 2px)`,
                     width: `calc(${(100 / 7) * event.span}% - 4px)`,
-                    height: "24px", // 이벤트 막대 높이 증가
+                    height: "24px",
                   }}
                   title={event.name}
                 >
-                  {event.name}
+                  {event.iconUrl && (
+                    <div className="relative w-4 h-4 mr-1.5 flex-shrink-0">
+                      <Image
+                        src={event.iconUrl}
+                        alt={event.name}
+                        width={16}
+                        height={16}
+                        className="rounded-sm"
+                      />
+                    </div>
+                  )}
+                  <span>{event.name}</span>
                 </div>
               ))}
             </div>

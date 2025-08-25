@@ -20,7 +20,7 @@ export default function ProfileList({
   if (profiles.length === 0) {
     return (
       <div className="text-center text-sm text-gray-500 py-2">
-        '적 프로필 추가' 버튼으로 프로필을 만드세요.
+        &apos;적 프로필 추가&apos; 버튼으로 프로필을 만드세요.
       </div>
     );
   }
