@@ -1,5 +1,5 @@
 // src/components/calendar/calendar-helpers.ts
-import { EVENTS, CYCLE_ANCHOR_DATE } from "@/data/event-data";
+import { EVENTS, CYCLE_ANCHOR_DATE, EventSchedule } from "@/data/event-data";
 
 export interface ProcessedEvent {
   name: string;
@@ -9,6 +9,7 @@ export interface ProcessedEvent {
   lane: number;
   groupId?: string;
   iconUrl?: string;
+  iconFit?: "cover" | "contain"; // 여기에 iconFit 속성 추가
 }
 
 const getCycleWeek = (date: Date): number => {
@@ -93,6 +94,7 @@ export const processEventsForWeek = (week: Date[]): ProcessedEvent[] => {
         lane: targetLane,
         groupId: event.groupId,
         iconUrl: event.iconUrl,
+        iconFit: event.iconFit, // iconFit 값 전달 추가
       });
     });
   });

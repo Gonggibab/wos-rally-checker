@@ -16,7 +16,7 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
     startDate.setDate(startDate.getDate() - ((today.getDay() + 6) % 7));
 
     const weeks = [];
-    const currentDatePointer = new Date(startDate); // let -> const
+    const currentDatePointer = new Date(startDate);
 
     for (let i = 0; i < 4; i++) {
       const currentWeek = [];
@@ -27,19 +27,19 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
       weeks.push(currentWeek);
     }
     return weeks;
-  }, []); // 불필요한 currentDate 의존성 제거
+  }, []);
 
   return (
     <div className="border-l border-r border-b border-gray-700">
       {weeksInMonth.map((week, weekIndex) => {
         const processedEvents = processEventsForWeek(week);
         const maxLane = Math.max(-1, ...processedEvents.map((e) => e.lane));
-        const requiredHeight = 40 + (maxLane + 1) * 28;
+        const requiredHeight = 48 + (maxLane + 1) * 38;
 
         return (
           <div
             key={weekIndex}
-            className="relative grid grid-cols-7 border-t border-gray-700 my-2"
+            className="relative grid grid-cols-7 border-t border-gray-700"
             style={{ minHeight: `${requiredHeight}px` }}
           >
             {week.map((date, dayIndex) => {
@@ -55,7 +55,7 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
                   }`}
                 >
                   <div
-                    className={`flex items-center justify-center w-8 h-6 rounded-md text-xs font-semibold ${
+                    className={`w-full flex justify-center items-center h-6 rounded-md text-sm font-semibold ${
                       isToday
                         ? "bg-blue-500 text-white"
                         : isCurrentMonth
@@ -68,31 +68,43 @@ export default function EventCalendar({ currentDate }: EventCalendarProps) {
                 </div>
               );
             })}
-            <div className="absolute top-8 left-0 right-0">
+
+            <div className="absolute top-10 left-0 right-0">
               {processedEvents.map((event) => (
                 <div
                   key={`${event.name}-${event.startCol}`}
-                  className={`${event.color} absolute flex items-center text-white text-xs font-semibold px-2 rounded-md truncate cursor-pointer hover:opacity-80`}
+                  // 좌우 패딩을 px-1.5로 수정
+                  className={`${event.color} absolute flex items-center text-white text-sm font-semibold px-1.5 rounded-lg cursor-pointer hover:opacity-80`}
                   style={{
-                    top: `${event.lane * 28 + 2}px`,
-                    left: `calc(${(100 / 7) * event.startCol}% + 2px)`,
-                    width: `calc(${(100 / 7) * event.span}% - 4px)`,
-                    height: "24px",
+                    top: `${event.lane * 38 + 2}px`,
+                    left: `calc(${(100 / 7) * event.startCol}% + 3px)`,
+                    width: `calc(${(100 / 7) * event.span}% - 6px)`,
+                    height: "32px",
                   }}
                   title={event.name}
                 >
                   {event.iconUrl && (
-                    <div className="relative w-4 h-4 mr-1.5 flex-shrink-0">
-                      <Image
-                        src={event.iconUrl}
-                        alt={event.name}
-                        width={16}
-                        height={16}
-                        className="rounded-sm"
-                      />
+                    <div className="relative w-10 h-7 -ml-1 mr-1 flex-shrink-0 flex items-center justify-center">
+                      {/* 제안해주신 코드로 수정 */}
+                      <div
+                        className={`relative ${
+                          event.iconFit === "contain" ? "w-full h-7" : "w-7 h-7"
+                        }`}
+                      >
+                        <Image
+                          src={event.iconUrl}
+                          alt={event.name}
+                          fill
+                          className={`rounded-md ${
+                            event.iconFit === "contain"
+                              ? "object-contain"
+                              : "object-cover"
+                          }`}
+                        />
+                      </div>
                     </div>
                   )}
-                  <span>{event.name}</span>
+                  <span className="whitespace-nowrap">{event.name}</span>
                 </div>
               ))}
             </div>
