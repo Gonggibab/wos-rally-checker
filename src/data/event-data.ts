@@ -234,4 +234,28 @@ export const EVENTS: Event[] = [
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21152458/jump_icon_40160.png",
     schedule: [null, null, null, { start: 0, end: 1 }],
   },
+  {
+    name: "사관의 계획1",
+    color: "bg-yellow-500",
+    groupId: "sagwan",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083303/%E5%A3%AB%E5%AE%98%E8%AE%A1%E5%88%92.png",
+    schedule: [null, { start: 2, end: 3 }, null, { start: 2, end: 3 }],
+  },
+  {
+    name: "사관의 계획2",
+    color: "bg-yellow-500",
+    groupId: "sagwan",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083303/%E5%A3%AB%E5%AE%98%E8%AE%A1%E5%88%92.png",
+    schedule: [{ start: 6, end: 6 }, null, { start: 6, end: 6 }, null],
+  },
+  {
+    name: "사관의 계획2",
+    color: "bg-yellow-500",
+    groupId: "sagwan",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083303/%E5%A3%AB%E5%AE%98%E8%AE%A1%E5%88%92.png",
+    schedule: [null, { start: 0, end: 0 }, null, { start: 0, end: 0 }],
+  },
 ];

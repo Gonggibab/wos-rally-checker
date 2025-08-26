@@ -8,13 +8,30 @@ export interface ProcessedEvent extends Event {
 }
 
 const getCycleWeek = (date: Date): number => {
-  const startOfWeek = new Date(date);
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  // 1. 입력된 날짜를 UTC 자정으로 표준화
+  const targetDate = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
 
-  const diffTime = startOfWeek.getTime() - CYCLE_ANCHOR_DATE.getTime();
-  const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+  // 2. 해당 주의 월요일을 찾음
+  const dayOfWeek = targetDate.getUTCDay(); // 0=일, 1=월
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  targetDate.setUTCDate(targetDate.getUTCDate() + diffToMonday);
 
+  // 3. 기준 날짜(ANCHOR)와 날짜 차이를 계산
+  const anchorDate = new Date(
+    Date.UTC(
+      CYCLE_ANCHOR_DATE.getUTCFullYear(),
+      CYCLE_ANCHOR_DATE.getUTCMonth(),
+      CYCLE_ANCHOR_DATE.getUTCDate()
+    )
+  );
+
+  const diffTime = targetDate.getTime() - anchorDate.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const diffWeeks = Math.floor(diffDays / 7);
+
+  // 4. 4주 주기로 변환
   return ((diffWeeks % 4) + 4) % 4;
 };
 

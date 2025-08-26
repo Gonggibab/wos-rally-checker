@@ -8,14 +8,17 @@ import EventDetailModal from "@/components/calendar/EventDetailModal";
 import { Event } from "@/data/event-data";
 
 export default function EventSchedulePage() {
-  const getStartOfWeek = (date: Date) => {
-    const newDate = new Date(date);
-    const day = newDate.getDay();
-    const diff = newDate.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(newDate.setDate(diff));
+  const getInitialViewDate = () => {
+    const today = new Date();
+    // UTC 기준으로 이번 주의 월요일을 계산
+    const dayOfWeek = today.getUTCDay();
+    const diff = today.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const monday = new Date(today.setUTCDate(diff));
+    monday.setUTCHours(0, 0, 0, 0); // 시간 정보를 제거하여 날짜만 사용
+    return monday;
   };
 
-  const [viewDate, setViewDate] = useState(getStartOfWeek(new Date()));
+  const [viewDate, setViewDate] = useState(getInitialViewDate());
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -24,19 +27,21 @@ export default function EventSchedulePage() {
     setModalOpen(true);
   };
 
-  const goToPreviousWeek = () =>
+  const goToPreviousWeek = () => {
     setViewDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() - 7);
       return newDate;
     });
+  };
 
-  const goToNextWeek = () =>
+  const goToNextWeek = () => {
     setViewDate((prev) => {
       const newDate = new Date(prev);
       newDate.setDate(newDate.getDate() + 7);
       return newDate;
     });
+  };
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const formatDate = (date: Date) => `${date.getMonth() + 1}/${date.getDate()}`;
