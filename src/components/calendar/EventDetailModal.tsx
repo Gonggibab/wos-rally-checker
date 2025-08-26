@@ -7,7 +7,14 @@ import { Fragment, useState, useEffect } from "react";
 import Image from "next/image";
 import { Event } from "@/data/event-data";
 import { useEventDetails } from "@/hooks/useEventDetails";
+
+// 두 라이브러리를 모두 import 합니다.
 import MDEditor from "@uiw/react-md-editor";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// MDEditor의 CSS는 편집 모드에서만 필요합니다.
+import "@uiw/react-md-editor/markdown-editor.css";
 
 interface EventDetailModalProps {
   isOpen: boolean;
@@ -128,6 +135,7 @@ export default function EventDetailModal({
                   data-color-mode="dark"
                 >
                   {isEditing ? (
+                    // 수정 모드: MDEditor 사용
                     <MDEditor
                       value={editedContent}
                       onChange={setEditedContent}
@@ -135,11 +143,14 @@ export default function EventDetailModal({
                       height="100%"
                     />
                   ) : (
+                    // 보기 모드: ReactMarkdown과 우리 CSS 사용
                     <div className="prose prose-invert prose-sm md:prose-base max-w-none">
                       {loading ? (
                         <p>로딩 중...</p>
                       ) : (
-                        <MDEditor.Markdown source={markdown} />
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {markdown}
+                        </ReactMarkdown>
                       )}
                     </div>
                   )}
