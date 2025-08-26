@@ -10,11 +10,10 @@ import { Event } from "@/data/event-data";
 export default function EventSchedulePage() {
   const getInitialViewDate = () => {
     const today = new Date();
-    // UTC 기준으로 이번 주의 월요일을 계산
     const dayOfWeek = today.getUTCDay();
     const diff = today.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(today.setUTCDate(diff));
-    monday.setUTCHours(0, 0, 0, 0); // 시간 정보를 제거하여 날짜만 사용
+    monday.setUTCHours(0, 0, 0, 0);
     return monday;
   };
 
@@ -43,6 +42,11 @@ export default function EventSchedulePage() {
     });
   };
 
+  // '이번 주'로 이동하는 함수 추가
+  const goToToday = () => {
+    setViewDate(getInitialViewDate());
+  };
+
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const formatDate = (date: Date) => `${date.getMonth() + 1}/${date.getDate()}`;
   const weekEnd = new Date(viewDate);
@@ -62,8 +66,17 @@ export default function EventSchedulePage() {
             >
               <ChevronLeftIcon className="w-6 h-6 text-white" />
             </button>
-            <div className="text-lg font-semibold text-gray-300">
-              {formatDate(viewDate)} ~ {formatDate(weekEnd)}
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-300">
+                {formatDate(viewDate)} ~ {formatDate(weekEnd)}
+              </div>
+              {/* '이번 주' 버튼 추가 */}
+              <button
+                onClick={goToToday}
+                className="text-sm text-blue-400 hover:underline"
+              >
+                이번 주로 이동
+              </button>
             </div>
             <button
               onClick={goToNextWeek}

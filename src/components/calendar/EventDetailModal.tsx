@@ -2,12 +2,13 @@
 "use client";
 
 import { Dialog, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Fragment, useState, useEffect } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Event } from "@/data/event-data";
+import { useEventDetails } from "@/hooks/useEventDetails";
 
 interface EventDetailModalProps {
   isOpen: boolean;
@@ -20,22 +21,41 @@ export default function EventDetailModal({
   onClose,
   event,
 }: EventDetailModalProps) {
-  const [markdown, setMarkdown] = useState("");
+  const { markdown, loading, updateDetails } = useEventDetails(event?.detailId);
+  const [isEditing, setEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState("");
 
   useEffect(() => {
-    if (isOpen && event?.detailId) {
-      import(`@/data/event-details/${event.detailId}.md`)
-        .then((res) => setMarkdown(res.default))
-        .catch((err) => {
-          console.error("Failed to load markdown file:", err);
-          setMarkdown("상세 정보를 불러오는 데 실패했습니다.");
-        });
-    } else if (!isOpen) {
-      setMarkdown("");
+    if (isOpen) {
+      setEditedContent(markdown);
+    } else {
+      setEditing(false);
     }
-  }, [isOpen, event]);
+  }, [isOpen, markdown]);
 
-  if (!event) return null;
+  const handleEditClick = () => {
+    const password = prompt("수정을 위해 비밀번호를 입력하세요:");
+    if (password === "2592") {
+      setEditing(true);
+    } else if (password !== null) {
+      alert("비밀번호가 틀렸습니다.");
+    }
+  };
+
+  const handleSave = async () => {
+    const success = await updateDetails(editedContent);
+    if (success) {
+      alert("성공적으로 저장되었습니다.");
+      setEditing(false);
+    } else {
+      alert("저장에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedContent(markdown);
+    setEditing(false);
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -66,13 +86,12 @@ export default function EventDetailModal({
               <Dialog.Panel className="w-full max-w-2xl h-[90vh] flex flex-col transform overflow-hidden rounded-t-2xl bg-[var(--card)] border-t border-[var(--card-border)] text-left align-middle shadow-xl transition-all">
                 <div className="flex-shrink-0 p-6 flex items-start justify-between border-b border-[var(--card-border)]">
                   <div className="flex items-center gap-4">
-                    {event.iconUrl && (
+                    {event?.iconUrl && (
                       <div className="relative w-12 h-12 flex-shrink-0">
                         <Image
                           src={event.iconUrl}
                           alt={event.name}
                           fill
-                          // sizes 속성 추가
                           sizes="48px"
                           className={`rounded-lg ${
                             event.iconFit === "contain"
@@ -87,9 +106,11 @@ export default function EventDetailModal({
                         as="h3"
                         className="text-xl font-bold leading-6 text-white"
                       >
-                        {event.name}
+                        {event?.name}
                       </Dialog.Title>
-                      <p className="mt-1 text-sm text-gray-400">이벤트 팁</p>
+                      <p className="mt-1 text-sm text-gray-400">
+                        이벤트 상세 정보
+                      </p>
                     </div>
                   </div>
                   <button
@@ -102,11 +123,50 @@ export default function EventDetailModal({
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-6 py-4">
-                  <div className="prose prose-invert prose-sm md:prose-base max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {markdown || "이벤트에 대한 설명이 아직 없습니다."}
-                    </ReactMarkdown>
-                  </div>
+                  {isEditing ? (
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-full bg-gray-900/50 border border-gray-700 rounded-lg text-white p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <div className="prose prose-invert prose-sm md:prose-base max-w-none">
+                      {loading ? (
+                        <p>로딩 중...</p>
+                      ) : (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {markdown}
+                        </ReactMarkdown>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-shrink-0 p-4 border-t border-[var(--card-border)] flex justify-end gap-3">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={handleCancel}
+                        className="h-10 px-4 rounded-lg bg-gray-700 text-white font-semibold hover:bg-gray-600"
+                      >
+                        취소
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        className="h-10 px-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500"
+                      >
+                        저장
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleEditClick}
+                      className="h-10 px-4 flex items-center gap-2 rounded-lg bg-gray-700 text-white font-semibold hover:bg-gray-600"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                      수정
+                    </button>
+                  )}
                 </div>
               </Dialog.Panel>
             </Transition.Child>
