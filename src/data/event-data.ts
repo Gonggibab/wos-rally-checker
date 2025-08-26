@@ -7,14 +7,14 @@ export interface EventSchedule {
 
 export interface Event {
   name: string;
-  color: string; // Tailwind CSS background color class
-  schedule: (EventSchedule | null)[]; // 4주(Part 1~4)의 스케줄
+  color: string;
+  schedule: (EventSchedule | null)[];
   groupId?: string;
   iconUrl?: string;
   iconFit?: "cover" | "contain";
+  detailId?: string;
 }
 
-// 기준점을 현재 주간의 월요일(2025-08-25)으로 변경합니다.
 export const CYCLE_ANCHOR_DATE = new Date("2025-08-25T00:00:00Z");
 
 export const EVENTS: Event[] = [
@@ -23,6 +23,7 @@ export const EVENTS: Event[] = [
     color: "bg-yellow-500",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21151925/jump_icon_40115.png",
+    detailId: "bingwon-wang",
     schedule: [{ start: 0, end: 6 }, null, null, null],
   },
   {
@@ -181,6 +182,7 @@ export const EVENTS: Event[] = [
     color: "bg-green-500",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21123327/jump_icon_40179.png",
+    detailId: "fishing-championship",
     schedule: [null, { start: 1, end: 4 }, null, { start: 1, end: 4 }],
   },
   {

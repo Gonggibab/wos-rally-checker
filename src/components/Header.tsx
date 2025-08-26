@@ -8,13 +8,11 @@ interface HeaderProps {
 }
 
 export default function Header({ isMounted, now, formatTime }: HeaderProps) {
+  // sticky 속성을 제거하고, flex-shrink-0을 추가하여 크기가 줄어들지 않도록 합니다.
   return (
-    // TopBar(h-14) 바로 아래에 고정되도록 top-14와 z-index를 추가합니다.
-    <header className="fixed top-14 left-0 right-0 z-10 bg-[var(--background)] py-6 text-center border-b border-[var(--card-border)]">
-      <p className="text-xl text-[var(--muted-foreground)] mb-1">
-        현재 UTC 시간
-      </p>
-      <p className="text-6xl md:text-7xl font-mono font-extralight tracking-tighter">
+    <header className="flex-shrink-0 bg-[var(--background)] py-4 text-center border-b border-[var(--card-border)] z-10">
+      <p className="text-base text-[var(--muted-foreground)]">현재 UTC 시간</p>
+      <p className="text-4xl font-mono font-light tracking-tighter">
         {isMounted ? formatTime(now) : "00:00:00"}
       </p>
     </header>

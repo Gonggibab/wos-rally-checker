@@ -1,7 +1,7 @@
 // src/components/Footer.tsx
 "use client";
 
-import { useState, Fragment } from "react";
+import { forwardRef, Fragment } from "react";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Transition } from "@headlessui/react";
 import { Profile } from "@/hooks/useRallies";
@@ -15,18 +15,24 @@ interface FooterProps {
   onProfileSelect: (profileId: string | null) => void;
   onProfileDelete: (profileId: string) => void;
   onMyMarchTimeClick: () => void;
+  isExpanded: boolean; // 부모로부터 상태를 받음
+  onToggle: () => void; // 부모의 상태를 변경하는 함수를 받음
 }
 
-export default function Footer({
-  profiles,
-  selectedProfileId,
-  onAddRally,
-  onAddProfileClick,
-  onProfileSelect,
-  onProfileDelete,
-  onMyMarchTimeClick,
-}: FooterProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
+  {
+    profiles,
+    selectedProfileId,
+    onAddRally,
+    onAddProfileClick,
+    onProfileSelect,
+    onProfileDelete,
+    onMyMarchTimeClick,
+    isExpanded,
+    onToggle,
+  },
+  ref
+) {
   const isProfileSelected = selectedProfileId !== null;
 
   const handleDisabledClick = () => {
@@ -36,11 +42,14 @@ export default function Footer({
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-10 p-4 bg-[var(--background)]/80 backdrop-blur-sm">
+    // footer 태그가 이제 페이지 바닥에 고정(absolute)됩니다.
+    <footer
+      ref={ref}
+      className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-[var(--background)]/80 backdrop-blur-sm"
+    >
       <div className="max-w-lg mx-auto">
-        {/* 접기/펼치기 버튼 */}
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={onToggle}
           className="w-full flex justify-center items-center text-gray-500 hover:text-white mb-2"
         >
           {isExpanded ? (
@@ -50,7 +59,6 @@ export default function Footer({
           )}
         </button>
 
-        {/* 펼쳐지는 영역 */}
         <Transition
           as={Fragment}
           show={isExpanded}
@@ -115,4 +123,6 @@ export default function Footer({
       </div>
     </footer>
   );
-}
+});
+
+export default Footer;

@@ -1,7 +1,8 @@
 // src/app/(main)/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import Header from "@/components/Header";
 import RallyCard from "@/components/RallyCard";
 import Footer from "@/components/Footer";
 import AddProfileModal from "@/components/AddProfileModal";
@@ -11,7 +12,6 @@ import { useRallies } from "@/hooks/useRallies";
 import { useMyMarchTime } from "@/hooks/useMyMarchTime";
 
 export default function RallyCheckerPage() {
-  // RallyCard에 props를 전달하기 위해 useClock은 여전히 필요합니다.
   const { now, isMounted, formatTime } = useClock();
 
   const {
@@ -34,9 +34,82 @@ export default function RallyCheckerPage() {
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isMarchTimeModalOpen, setMarchTimeModalOpen] = useState(false);
 
+  // Footer 상태 관리
+  const [isFooterExpanded, setFooterExpanded] = useState(true);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const footerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (footerRef.current) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          setFooterHeight(entry.contentRect.height);
+        }
+      });
+      resizeObserver.observe(footerRef.current);
+      return () => resizeObserver.disconnect();
+    }
+  }, []);
+
   return (
-    <>
-      {/* Header가 Layout으로 이동했으므로 여기서 제거합니다. */}
+    <div className="h-full flex flex-col relative">
+      <Header isMounted={isMounted} now={now} formatTime={formatTime} />
+
+      {/* 스크롤 영역에 동적으로 padding-bottom 적용 */}
+      <div
+        className="flex-grow overflow-y-auto"
+        style={{ paddingBottom: `${footerHeight}px` }}
+      >
+        <div className="px-4 py-4">
+          <div className="max-w-lg mx-auto">
+            {errorMessage && (
+              <div className="mb-4 p-3 bg-red-500/20 text-red-400 text-center rounded-lg">
+                {errorMessage}
+              </div>
+            )}
+            <div className="space-y-3">
+              {rallies.map((rally) => (
+                <RallyCard
+                  key={rally.id}
+                  rally={rally}
+                  now={now}
+                  formatTime={formatTime}
+                  toggleEditMode={toggleEditMode}
+                  handleNicknameChange={handleNicknameChange}
+                  deleteRally={deleteRally}
+                  adjustRallyTime={adjustRallyTime}
+                  myMarchTime={myMarchTime}
+                  isMounted={isMounted}
+                />
+              ))}
+              {rallies.length === 0 && (
+                <div className="text-center pt-10">
+                  <p className="text-lg font-semibold text-white">
+                    활성화된 랠리가 없습니다.
+                  </p>
+                  <p className="text-[var(--muted-foreground)] mt-2">
+                    아래 버튼을 눌러 새 랠리를 추가하세요.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer
+        ref={footerRef} // ref 전달
+        isExpanded={isFooterExpanded} // 상태 전달
+        onToggle={() => setFooterExpanded((prev) => !prev)} // 핸들러 전달
+        profiles={profiles}
+        selectedProfileId={selectedProfileId}
+        onAddRally={addRally}
+        onAddProfileClick={() => setProfileModalOpen(true)}
+        onProfileSelect={setSelectedProfileId}
+        onProfileDelete={deleteProfile}
+        onMyMarchTimeClick={() => setMarchTimeModalOpen(true)}
+      />
+
       <AddProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setProfileModalOpen(false)}
@@ -48,52 +121,6 @@ export default function RallyCheckerPage() {
         onSave={saveMyMarchTime}
         initialTime={myMarchTime}
       />
-
-      <div className="px-4 pb-64">
-        <div className="max-w-lg mx-auto">
-          {errorMessage && (
-            <div className="my-4 p-3 bg-red-500/20 text-red-400 text-center rounded-lg">
-              {errorMessage}
-            </div>
-          )}
-          <div className="space-y-3">
-            {rallies.map((rally) => (
-              <RallyCard
-                key={rally.id}
-                rally={rally}
-                now={now}
-                formatTime={formatTime}
-                toggleEditMode={toggleEditMode}
-                handleNicknameChange={handleNicknameChange}
-                deleteRally={deleteRally}
-                adjustRallyTime={adjustRallyTime}
-                myMarchTime={myMarchTime}
-                isMounted={isMounted}
-              />
-            ))}
-            {rallies.length === 0 && (
-              <div className="text-center pt-10">
-                <p className="text-lg font-semibold text-white">
-                  활성화된 랠리가 없습니다.
-                </p>
-                <p className="text-[var(--muted-foreground)] mt-2">
-                  아래 버튼을 눌러 새 랠리를 추가하세요.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <Footer
-        profiles={profiles}
-        selectedProfileId={selectedProfileId}
-        onAddRally={addRally}
-        onAddProfileClick={() => setProfileModalOpen(true)}
-        onProfileSelect={setSelectedProfileId}
-        onProfileDelete={deleteProfile}
-        onMyMarchTimeClick={() => setMarchTimeModalOpen(true)}
-      />
-    </>
+    </div>
   );
 }
