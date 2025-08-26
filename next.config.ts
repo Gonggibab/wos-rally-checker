@@ -11,7 +11,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // 이 설정은 `next build` 시 Webpack을 위해 필요합니다.
   webpack: (config) => {
     config.module.rules.push({
       test: /\.md$/,
@@ -19,17 +18,12 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
-  // `next dev --turbopack`을 위한 실험적 기능 설정입니다.
-  experimental: {
-    turbo: {
-      rules: {
-        // .md 확장자를 가진 모든 파일에 대해
-        "**/*.md": {
-          // raw-loader를 사용하여
-          loaders: ["raw-loader"],
-          // JavaScript 모듈로 취급하도록 합니다.
-          as: "*.js",
-        },
+  // `experimental.turbo`를 `turbopack`으로 변경합니다.
+  turbopack: {
+    rules: {
+      "**/*.md": {
+        loaders: ["raw-loader"],
+        as: "*.js",
       },
     },
   },

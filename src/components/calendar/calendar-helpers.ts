@@ -1,12 +1,6 @@
 // src/components/calendar/calendar-helpers.ts
-import {
-  EVENTS,
-  CYCLE_ANCHOR_DATE,
-  Event,
-  EventSchedule,
-} from "@/data/event-data";
+import { EVENTS, CYCLE_ANCHOR_DATE, Event } from "@/data/event-data";
 
-// ProcessedEvent가 Event의 모든 속성을 상속받도록 수정합니다.
 export interface ProcessedEvent extends Event {
   startCol: number;
   span: number;
@@ -87,7 +81,6 @@ export const processEventsForWeek = (week: Date[]): ProcessedEvent[] => {
       for (let j = event.startCol; j <= event.endCol; j++) {
         lanes[targetLane][j] = event.uniqueId;
       }
-      // 원본 event의 모든 정보를 유지하면서 lane 정보만 추가하도록 수정합니다.
       processedEvents.push({
         ...event,
         lane: targetLane,

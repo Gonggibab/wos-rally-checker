@@ -34,7 +34,6 @@ export default function RallyCheckerPage() {
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isMarchTimeModalOpen, setMarchTimeModalOpen] = useState(false);
 
-  // Footer 상태 관리
   const [isFooterExpanded, setFooterExpanded] = useState(true);
   const [footerHeight, setFooterHeight] = useState(0);
   const footerRef = useRef<HTMLElement | null>(null);
@@ -42,7 +41,8 @@ export default function RallyCheckerPage() {
   useEffect(() => {
     if (footerRef.current) {
       const resizeObserver = new ResizeObserver((entries) => {
-        for (let entry of entries) {
+        // `let`을 `const`로 수정합니다.
+        for (const entry of entries) {
           setFooterHeight(entry.contentRect.height);
         }
       });
@@ -55,7 +55,6 @@ export default function RallyCheckerPage() {
     <div className="h-full flex flex-col relative">
       <Header isMounted={isMounted} now={now} formatTime={formatTime} />
 
-      {/* 스크롤 영역에 동적으로 padding-bottom 적용 */}
       <div
         className="flex-grow overflow-y-auto"
         style={{ paddingBottom: `${footerHeight}px` }}
@@ -98,9 +97,9 @@ export default function RallyCheckerPage() {
       </div>
 
       <Footer
-        ref={footerRef} // ref 전달
-        isExpanded={isFooterExpanded} // 상태 전달
-        onToggle={() => setFooterExpanded((prev) => !prev)} // 핸들러 전달
+        ref={footerRef}
+        isExpanded={isFooterExpanded}
+        onToggle={() => setFooterExpanded((prev) => !prev)}
         profiles={profiles}
         selectedProfileId={selectedProfileId}
         onAddRally={addRally}
