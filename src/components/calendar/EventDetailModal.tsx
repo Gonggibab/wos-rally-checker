@@ -5,10 +5,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Fragment, useState, useEffect } from "react";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Event } from "@/data/event-data";
 import { useEventDetails } from "@/hooks/useEventDetails";
+import MDEditor from "@uiw/react-md-editor";
 
 interface EventDetailModalProps {
   isOpen: boolean;
@@ -23,13 +22,15 @@ export default function EventDetailModal({
 }: EventDetailModalProps) {
   const { markdown, loading, updateDetails } = useEventDetails(event?.detailId);
   const [isEditing, setEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState("");
+  const [editedContent, setEditedContent] = useState<string | undefined>("");
 
   useEffect(() => {
     if (isOpen) {
       setEditedContent(markdown);
     } else {
+      // 모달이 닫힐 때 편집 모드와 내용을 초기화합니다.
       setEditing(false);
+      setEditedContent("");
     }
   }, [isOpen, markdown]);
 
@@ -43,7 +44,7 @@ export default function EventDetailModal({
   };
 
   const handleSave = async () => {
-    const success = await updateDetails(editedContent);
+    const success = await updateDetails(editedContent || "");
     if (success) {
       alert("성공적으로 저장되었습니다.");
       setEditing(false);
@@ -122,21 +123,23 @@ export default function EventDetailModal({
                   </button>
                 </div>
 
-                <div className="flex-grow overflow-y-auto px-6 py-4">
+                <div
+                  className="flex-grow overflow-y-auto px-6 py-4"
+                  data-color-mode="dark"
+                >
                   {isEditing ? (
-                    <textarea
+                    <MDEditor
                       value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      className="w-full h-full bg-gray-900/50 border border-gray-700 rounded-lg text-white p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onChange={setEditedContent}
+                      preview="live"
+                      height="100%"
                     />
                   ) : (
                     <div className="prose prose-invert prose-sm md:prose-base max-w-none">
                       {loading ? (
                         <p>로딩 중...</p>
                       ) : (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {markdown}
-                        </ReactMarkdown>
+                        <MDEditor.Markdown source={markdown} />
                       )}
                     </div>
                   )}

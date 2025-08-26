@@ -42,7 +42,6 @@ export default function EventSchedulePage() {
     });
   };
 
-  // '이번 주'로 이동하는 함수 추가
   const goToToday = () => {
     setViewDate(getInitialViewDate());
   };
@@ -70,7 +69,6 @@ export default function EventSchedulePage() {
               <div className="text-lg font-semibold text-gray-300">
                 {formatDate(viewDate)} ~ {formatDate(weekEnd)}
               </div>
-              {/* '이번 주' 버튼 추가 */}
               <button
                 onClick={goToToday}
                 className="text-sm text-blue-400 hover:underline"
