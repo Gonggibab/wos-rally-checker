@@ -1,7 +1,7 @@
 // src/app/(main)/event-schedule/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import EventCalendar from "@/components/calendar/EventCalendar";
 import EventDetailModal from "@/components/calendar/EventDetailModal";
@@ -20,6 +20,17 @@ export default function EventSchedulePage() {
   const [viewDate, setViewDate] = useState(getInitialViewDate());
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  const week = useMemo(() => {
+    const startDate = new Date(viewDate);
+    const currentWeek = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      currentWeek.push(day);
+    }
+    return currentWeek;
+  }, [viewDate]);
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -46,7 +57,7 @@ export default function EventSchedulePage() {
     setViewDate(getInitialViewDate());
   };
 
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weekDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const formatDate = (date: Date) => `${date.getMonth() + 1}/${date.getDate()}`;
   const weekEnd = new Date(viewDate);
   weekEnd.setDate(weekEnd.getDate() + 6);
@@ -54,8 +65,9 @@ export default function EventSchedulePage() {
   return (
     <>
       <div className="h-full flex flex-col">
-        {/* 제목(h1)을 제거하고 주간 네비게이션만 남깁니다. */}
+        {/* 상단 고정: 주간 네비게이션 및 요일/날짜 헤더 */}
         <div className="px-4 pt-4 pb-2 bg-[var(--background)] z-10 flex-shrink-0">
+          {/* 주간 네비게이션 */}
           <div className="flex items-center justify-center space-x-4">
             <button
               onClick={goToPreviousWeek}
@@ -81,15 +93,30 @@ export default function EventSchedulePage() {
               <ChevronRightIcon className="w-6 h-6 text-white" />
             </button>
           </div>
+          {/* 요일 및 날짜 헤더 */}
+          <div className="min-w-[840px] grid grid-cols-7 text-center font-semibold text-gray-400 border-b border-gray-700 pb-2 mt-4">
+            {week.map((date, index) => {
+              const today = new Date();
+              const isToday = today.toDateString() === date.toDateString();
+              return (
+                <div key={index}>
+                  <div>{weekDayNames[index]}</div>
+                  <div
+                    className={`mt-1 text-sm ${
+                      isToday ? "text-blue-400 font-bold" : "text-gray-500"
+                    }`}
+                  >
+                    {date.getMonth() + 1}/{date.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex-grow overflow-x-auto px-4 pt-2">
+        {/* 스크롤 영역: 이벤트 캘린더 */}
+        <div className="flex-grow overflow-y-auto px-4">
           <div className="min-w-[840px]">
-            <div className="grid grid-cols-7 text-center font-semibold text-gray-400 border-b border-gray-700 pb-2">
-              {weekDays.map((day) => (
-                <div key={day}>{day}</div>
-              ))}
-            </div>
             <EventCalendar
               viewDate={viewDate}
               onEventClick={handleEventClick}

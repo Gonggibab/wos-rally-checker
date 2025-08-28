@@ -17,6 +17,8 @@ const navItems = [
   { href: "/event-schedule", label: "이벤트 일정" },
 ];
 
+const externalNavItems = [{ href: "/feedback", label: "버그신고 및 건의" }];
+
 export default function SideBar({ isOpen, onClose }: SideBarProps) {
   const pathname = usePathname();
 
@@ -64,6 +66,30 @@ export default function SideBar({ isOpen, onClose }: SideBarProps) {
                     <div className="mt-4 px-2">
                       <ul className="space-y-1">
                         {navItems.map((item) => {
+                          const isActive = pathname === item.href;
+                          return (
+                            <li key={item.href}>
+                              <Link
+                                href={item.href}
+                                onClick={onClose}
+                                className={`block w-full text-left px-4 py-2.5 rounded-md font-medium transition-colors ${
+                                  isActive
+                                    ? "bg-blue-600 text-white"
+                                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                                }`}
+                              >
+                                {item.label}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      {/* 구분선 */}
+                      <hr className="my-3 border-t border-[var(--card-border)]" />
+
+                      <ul className="space-y-1">
+                        {externalNavItems.map((item) => {
                           const isActive = pathname === item.href;
                           return (
                             <li key={item.href}>
