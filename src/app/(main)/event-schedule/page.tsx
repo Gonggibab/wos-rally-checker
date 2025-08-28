@@ -54,10 +54,8 @@ export default function EventSchedulePage() {
   return (
     <>
       <div className="h-full flex flex-col">
-        <div className="px-4 pt-6 pb-2 bg-[var(--background)] z-10 flex-shrink-0">
-          <h1 className="text-3xl font-bold text-white text-center mb-2">
-            이벤트 일정
-          </h1>
+        {/* 제목(h1)을 제거하고 주간 네비게이션만 남깁니다. */}
+        <div className="px-4 pt-4 pb-2 bg-[var(--background)] z-10 flex-shrink-0">
           <div className="flex items-center justify-center space-x-4">
             <button
               onClick={goToPreviousWeek}

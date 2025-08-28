@@ -8,17 +8,13 @@ export interface ProcessedEvent extends Event {
 }
 
 const getCycleWeek = (date: Date): number => {
-  // 1. 입력된 날짜를 UTC 자정으로 표준화
   const targetDate = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
-
-  // 2. 해당 주의 월요일을 찾음
-  const dayOfWeek = targetDate.getUTCDay(); // 0=일, 1=월
+  const dayOfWeek = targetDate.getUTCDay();
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   targetDate.setUTCDate(targetDate.getUTCDate() + diffToMonday);
 
-  // 3. 기준 날짜(ANCHOR)와 날짜 차이를 계산
   const anchorDate = new Date(
     Date.UTC(
       CYCLE_ANCHOR_DATE.getUTCFullYear(),
@@ -31,7 +27,6 @@ const getCycleWeek = (date: Date): number => {
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
   const diffWeeks = Math.floor(diffDays / 7);
 
-  // 4. 4주 주기로 변환
   return ((diffWeeks % 4) + 4) % 4;
 };
 
@@ -69,38 +64,15 @@ export const processEventsForWeek = (week: Date[]): ProcessedEvent[] => {
     return minStartA - minStartB;
   });
 
-  const lanes: (string | null)[][] = [];
   const processedEvents: ProcessedEvent[] = [];
 
-  sortedGroups.forEach((group) => {
-    let targetLane = -1;
-
-    for (let i = 0; ; i++) {
-      lanes[i] = lanes[i] || Array(7).fill(null);
-      const lane = lanes[i];
-      let canPlaceGroup = true;
-      for (const event of group) {
-        for (let j = event.startCol; j <= event.endCol; j++) {
-          if (lane[j] !== null && lane[j] !== event.uniqueId) {
-            canPlaceGroup = false;
-            break;
-          }
-        }
-        if (!canPlaceGroup) break;
-      }
-      if (canPlaceGroup) {
-        targetLane = i;
-        break;
-      }
-    }
-
+  // 수정된 로직: 각 그룹이 고유한 lane을 갖도록 함
+  sortedGroups.forEach((group, index) => {
+    const laneIndex = index; // 그룹의 순서가 그대로 lane 번호가 됨
     group.forEach((event) => {
-      for (let j = event.startCol; j <= event.endCol; j++) {
-        lanes[targetLane][j] = event.uniqueId;
-      }
       processedEvents.push({
         ...event,
-        lane: targetLane,
+        lane: laneIndex,
       });
     });
   });

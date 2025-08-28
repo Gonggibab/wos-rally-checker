@@ -20,7 +20,7 @@ export const CYCLE_ANCHOR_DATE = new Date("2025-08-25T00:00:00Z");
 export const EVENTS: Event[] = [
   {
     name: "빙원의 왕",
-    color: "bg-yellow-500",
+    color: "bg-blue-500",
     detailId: "bingwon-wang",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21151925/jump_icon_40115.png",
@@ -35,8 +35,8 @@ export const EVENTS: Event[] = [
     schedule: [{ start: 1, end: 3 }, null, { start: 1, end: 3 }, null],
   },
   {
-    name: "내부 캐슬전투",
-    color: "bg-blue-500",
+    name: "캐슬전투",
+    color: "bg-red-500",
     detailId: "solar-fight",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083813/%E7%8E%8B%E5%9F%8E%E4%BA%89%E5%A4%BA%E6%88%98.png",
@@ -91,34 +91,6 @@ export const EVENTS: Event[] = [
       { start: 1, end: 4 },
       { start: 1, end: 4 },
       { start: 1, end: 4 },
-    ],
-  },
-  {
-    name: "영웅의 전당",
-    color: "bg-yellow-500",
-    detailId: "hallof-hero",
-    groupId: "yeongjeon",
-    iconUrl:
-      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21155058/item_icon_620501.png",
-    schedule: [
-      { start: 0, end: 1 },
-      { start: 0, end: 1 },
-      { start: 0, end: 1 },
-      { start: 0, end: 1 },
-    ],
-  },
-  {
-    name: "영웅의 전당",
-    color: "bg-yellow-500",
-    detailId: "hallof-hero",
-    groupId: "yeongjeon",
-    iconUrl:
-      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21155058/item_icon_620501.png",
-    schedule: [
-      { start: 6, end: 6 },
-      { start: 6, end: 6 },
-      { start: 6, end: 6 },
-      { start: 6, end: 6 },
     ],
   },
   {
@@ -260,7 +232,7 @@ export const EVENTS: Event[] = [
     schedule: [null, null, null, { start: 0, end: 1 }],
   },
   {
-    name: "사관의계획1",
+    name: "사관의계획Ⅰ",
     color: "bg-yellow-500",
     groupId: "sagwan",
     detailId: "sa-gwan1",
@@ -269,21 +241,21 @@ export const EVENTS: Event[] = [
     schedule: [null, { start: 2, end: 3 }, null, { start: 2, end: 3 }],
   },
   {
-    name: "사관의계획2",
+    name: "사관의계획Ⅱ",
     color: "bg-yellow-500",
     groupId: "sagwan",
     detailId: "sa-gwan2",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083303/%E5%A3%AB%E5%AE%98%E8%AE%A1%E5%88%92.png",
     schedule: [
-      { start: 6, end: 6 },
       { start: 0, end: 0 },
       { start: 6, end: 6 },
       { start: 0, end: 0 },
+      { start: 6, end: 6 },
     ],
   },
   {
-    name: "군비경쟁1",
+    name: "군비경쟁Ⅰ",
     color: "bg-yellow-500",
     groupId: "gunbi",
     detailId: "gun-bi1",
@@ -292,12 +264,20 @@ export const EVENTS: Event[] = [
     schedule: [null, { start: 0, end: 1 }, null, { start: 0, end: 1 }],
   },
   {
-    name: "군비경쟁2",
+    name: "군비경쟁Ⅱ",
     color: "bg-yellow-500",
     groupId: "gunbi",
     detailId: "gun-bi2",
     iconUrl:
       "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22083308/%E5%86%9B%E5%A4%87%E7%AB%9E%E6%BC%94.png",
     schedule: [null, { start: 4, end: 5 }, null, { start: 4, end: 5 }],
+  },
+  {
+    name: "설원 거래소",
+    color: "bg-yellow-500",
+    detailId: "sul-won",
+    iconUrl:
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/21152458/jump_icon_40160.png",
+    schedule: [null, { start: 0, end: 1 }, null, null],
   },
 ];
