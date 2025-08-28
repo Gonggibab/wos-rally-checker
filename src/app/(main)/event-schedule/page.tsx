@@ -65,9 +65,8 @@ export default function EventSchedulePage() {
   return (
     <>
       <div className="h-full flex flex-col">
-        {/* 상단 고정: 주간 네비게이션 및 요일/날짜 헤더 */}
-        <div className="px-4 pt-4 pb-2 bg-[var(--background)] z-10 flex-shrink-0">
-          {/* 주간 네비게이션 */}
+        {/* 상단 고정: 주간 네비게이션 */}
+        <div className="px-4 pt-4 pb-2 bg-[var(--background)] z-20 flex-shrink-0">
           <div className="flex items-center justify-center space-x-4">
             <button
               onClick={goToPreviousWeek}
@@ -93,30 +92,31 @@ export default function EventSchedulePage() {
               <ChevronRightIcon className="w-6 h-6 text-white" />
             </button>
           </div>
-          {/* 요일 및 날짜 헤더 */}
-          <div className="min-w-[840px] grid grid-cols-7 text-center font-semibold text-gray-400 border-b border-gray-700 pb-2 mt-4">
-            {week.map((date, index) => {
-              const today = new Date();
-              const isToday = today.toDateString() === date.toDateString();
-              return (
-                <div key={index}>
-                  <div>{weekDayNames[index]}</div>
-                  <div
-                    className={`mt-1 text-sm ${
-                      isToday ? "text-blue-400 font-bold" : "text-gray-500"
-                    }`}
-                  >
-                    {date.getMonth() + 1}/{date.getDate()}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
 
-        {/* 스크롤 영역: 이벤트 캘린더 */}
-        <div className="flex-grow overflow-y-auto px-4">
-          <div className="min-w-[840px]">
+        <div className="flex-grow overflow-auto">
+          <div className="min-w-[840px] px-4">
+            {/* 요일 및 날짜 헤더: border-b를 제거하여 경계선을 없앱니다. */}
+            <div className="sticky top-0 z-10 grid grid-cols-7 text-center font-semibold text-gray-400 pb-2 bg-[var(--background)]">
+              {week.map((date, index) => {
+                const today = new Date();
+                const isToday = today.toDateString() === date.toDateString();
+                return (
+                  <div key={index} className="pt-2">
+                    <div>{weekDayNames[index]}</div>
+                    <div
+                      className={`mt-1 text-sm ${
+                        isToday ? "text-blue-400 font-bold" : "text-gray-500"
+                      }`}
+                    >
+                      {date.getMonth() + 1}/{date.getDate()}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 이벤트 캘린더 */}
             <EventCalendar
               viewDate={viewDate}
               onEventClick={handleEventClick}
