@@ -42,20 +42,22 @@ const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
   };
 
   return (
-    // footer 태그가 이제 페이지 바닥에 고정(absolute)됩니다.
+    // p-4를 p-2로 수정하여 전체적인 상하 패딩을 줄입니다.
     <footer
       ref={ref}
-      className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-[var(--background)]/80 backdrop-blur-sm"
+      className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-[var(--background)]/80 backdrop-blur-sm"
     >
       <div className="max-w-lg mx-auto">
         <button
           onClick={onToggle}
-          className="w-full flex justify-center items-center text-gray-500 hover:text-white mb-2"
+          // mb-2를 mb-1로 수정하고, 버튼 자체의 패딩(py-1)을 추가하여 클릭 영역을 확보합니다.
+          className="w-full flex justify-center items-center text-gray-500 hover:text-white mb-1 py-1"
         >
           {isExpanded ? (
-            <ChevronDownIcon className="w-6 h-6" />
+            // 아이콘 크기를 w-5 h-5로 줄입니다.
+            <ChevronDownIcon className="w-5 h-5" />
           ) : (
-            <ChevronUpIcon className="w-6 h-6" />
+            <ChevronUpIcon className="w-5 h-5" />
           )}
         </button>
 
