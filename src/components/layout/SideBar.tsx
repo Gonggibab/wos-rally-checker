@@ -12,9 +12,11 @@ interface SideBarProps {
   onClose: () => void;
 }
 
+// '불수 계산기' 메뉴를 navItems에 추가합니다.
 const navItems = [
   { href: "/", label: "랠리 시간 계산기" },
   { href: "/event-schedule", label: "이벤트 일정" },
+  { href: "/fire-crystal-calculator", label: "불수 계산기" },
 ];
 
 const externalNavItems = [{ href: "/feedback", label: "버그신고 및 건의" }];
@@ -29,7 +31,6 @@ export default function SideBar({ isOpen, onClose }: SideBarProps) {
         <Transition.Child
           as={Fragment}
           enter="ease-in-out duration-300"
-          enterFrom="opacity-0"
           enterTo="opacity-100"
           leave="ease-in-out duration-300"
           leaveFrom="opacity-100"
@@ -45,7 +46,6 @@ export default function SideBar({ isOpen, onClose }: SideBarProps) {
               <Transition.Child
                 as={Fragment}
                 enter="transform transition ease-in-out duration-300"
-                enterFrom="translate-x-full"
                 enterTo="translate-x-0"
                 leave="transform transition ease-in-out duration-300"
                 leaveFrom="translate-x-0"

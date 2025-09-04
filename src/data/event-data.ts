@@ -160,11 +160,11 @@ export const EVENTS: Event[] = [
     schedule: [null, { start: 0, end: 6 }, null, { start: 0, end: 6 }],
   },
   {
-    name: "지나의 복수",
+    name: "영웅의 사명",
     color: "bg-blue-500",
-    detailId: "gina",
+    detailId: "sa-myeug",
     iconUrl:
-      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2023/09/16082829/jump_icon_40067.png",
+      "https://gom-s3-user-avatar.s3.us-west-2.amazonaws.com/wp-content/uploads/2025/05/22084102/%E8%8B%B1%E9%9B%84%E7%9A%84%E4%BD%BF%E5%91%BD%E9%A1%B5%E7%AD%BE%E5%9B%BE%E6%A0%87.png",
     schedule: [null, { start: 2, end: 4 }, null, { start: 2, end: 4 }],
   },
   {
