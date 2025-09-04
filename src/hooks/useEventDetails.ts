@@ -24,18 +24,10 @@ export function useEventDetails(detailId: string | undefined) {
       if (docSnap.exists()) {
         setMarkdown(docSnap.data().markdownContent);
       } else {
-        // Firestore에 문서가 없으면, 로컬 md 파일을 초기값으로 불러옵니다.
-        console.log(
-          `Firestore document for '${detailId}' not found. Falling back to local .md file.`
-        );
-        try {
-          const localContent = await import(
-            `@/data/event-details/${detailId}.md`
-          );
-          setMarkdown(localContent.default);
-        } catch {
-          setMarkdown("이벤트에 대한 설명이 아직 없습니다.");
-        }
+        // Firestore에 문서가 없을 경우, 에러를 유발하는 로컬 파일 import 로직을 제거하고
+        // 바로 fallback 메시지를 표시하도록 수정합니다.
+        console.log(`Firestore document for '${detailId}' not found.`);
+        setMarkdown("이벤트에 대한 설명이 아직 없습니다.");
       }
     } catch (error) {
       console.error("Error fetching event details:", error);
@@ -65,7 +57,6 @@ export function useEventDetails(detailId: string | undefined) {
       setMarkdown(newContent);
       return true;
     } catch (error) {
-      // 콘솔에 상세 오류를 반드시 출력하도록 수정
       console.error("!!! Firestore update failed:", error);
       return false;
     }
